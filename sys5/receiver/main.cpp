@@ -29,9 +29,9 @@ inline bool IsExist(const std::string& name) noexcept
     if (res == -1)
     {
         std::cerr << '[' << __FILE__ << ':' << __LINE__ << "] " << strerror(errno) << std::endl;
-        return true;
+        return false;
     }
-    return res == 0; 
+    return res == 0;
 }
 
 constexpr const char* const IN_PATH  = "/tmp/msg.temp";

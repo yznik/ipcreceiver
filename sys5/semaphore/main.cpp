@@ -3,24 +3,10 @@
 
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/msg.h>
+#include <sys/sem.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
-
-template<size_t SIZE>
-struct message {
-    long m_type;
-    char m_data[SIZE] = {0};
-    inline size_t capacity() const noexcept
-    {
-        return SIZE;
-    }
-    inline const char* data() const noexcept
-    {
-        return m_data;
-    }
-};
 
 inline bool IsExist(const std::string& name) noexcept
 {
@@ -29,14 +15,14 @@ inline bool IsExist(const std::string& name) noexcept
     if (res == -1)
     {
         std::cerr << '[' << __FILE__ << ':' << __LINE__ << "] " << strerror(errno) << std::endl;
-        return true;
+        return false;
     }
     return res == 0; 
 }
 
-constexpr const char* const IN_PATH  = "/tmp/msg.temp";
-constexpr int PROJ_ID                = 1;
-constexpr const char* const OUT_PATH = "/home/box/message.txt";
+constexpr const char* const SEM_PATH  = "/tmp/sem.temp";
+constexpr int PROJ_ID                 = 1;
+constexpr int SEM_COUNT               = 16;
 
 #define CHECK_ERROR(CODE, file, line)                                                    \
 if (CODE == -1)                                                                          \
@@ -49,23 +35,21 @@ if (CODE == -1)                                                                 
 
 int main()
 {
-    if (!IsExist(IN_PATH))
+    if (!IsExist(SEM_PATH))
     {
-        std::ofstream o(IN_PATH);
+        std::ofstream o(SEM_PATH);
     }
-    const auto key = ftok(IN_PATH, PROJ_ID);
+    const auto key = ftok(SEM_PATH, PROJ_ID);
     CHECK(key)
-    int queueFlags = IPC_CREAT | 0666;
-    auto queueId = msgget(key, queueFlags);
-    CHECK(queueId)
-    std::ofstream f(OUT_PATH);
-    while (true)
+    constexpr int semFlags = IPC_CREAT | 0666;
+    auto semId = semget(key, SEM_COUNT, semFlags);
+
+    for(int i = 0; i < SEM_COUNT; ++i)
     {
-        message<80> msg;
-        auto received = msgrcv(queueId, &msg, msg.capacity(), 0, 0);
-        CHECK(received)
-        f << msg.data() << std::endl;
+        CHECK(semctl(semId, i, SETVAL, i))
     }
-    CHECK(msgctl(queueId, IPC_RMID, nullptr))
+
+    CHECK(semId)
+    CHECK(semctl(semId, SEM_COUNT, IPC_RMID, nullptr))
     return 0;
 }
