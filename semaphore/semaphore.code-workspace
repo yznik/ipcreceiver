@@ -1,0 +1,30 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"C_Cpp.autocomplete": "Default",
+		"C_Cpp.autoAddFileAssociations": true,
+		"C_Cpp.default.cppStandard": "c++11",
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "build",
+				"type": "shell",
+				"command": "make",
+				"args": [
+					"-j4"
+				],
+				"group": {
+					"isDefault": true,
+					"kind": "build"
+				},
+				"problemMatcher": "$gcc"
+			}
+		]
+	}
+}
