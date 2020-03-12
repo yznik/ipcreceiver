@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-constexpr const char* const SH_MEM_PATH  = "/test.sem";
+constexpr const char* const SH_MEM_PATH  = "/test.shm";
 constexpr off_t FILE_SIZE = 1024 * 1024;
 
 #define CHECK_ERROR(CODE, file, line)                                                    \
@@ -33,11 +33,7 @@ int main()
         std::cerr << '[' << __FILE__ << ':' << __LINE__ << "] " << strerror(errno) << std::endl;
         return -1;
     }
-    uint8_t *bytes = static_cast<uint8_t*>(raw_ptr);
-    for(off_t i = 0; i < FILE_SIZE; ++i)
-    {
-        bytes[i] = 13;
-    }
+    memset(raw_ptr, 13, FILE_SIZE);
     CHECK(munmap(raw_ptr, FILE_SIZE))
     //CHECK(shm_unlink(SH_MEM_PATH))
     return 0;
